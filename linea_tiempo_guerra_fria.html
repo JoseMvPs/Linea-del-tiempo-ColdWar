@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Línea de Tiempo - Guerra Fría</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #e0e0e0;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,.1) 2px,
+                rgba(0,0,0,.1) 4px
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(180deg, #8B0000 0%, #DC143C 100%);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 2;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            color: #fff;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #f0f0f0;
+            margin-top: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .timeline-container {
+            position: relative;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 20px;
+            z-index: 2;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #DC143C 0%, #8B0000 50%, #DC143C 100%);
+            box-shadow: 0 0 10px rgba(220, 20, 60, 0.5);
+        }
+
+        .timeline-event {
+            position: relative;
+            margin: 80px 0;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            animation: fadeIn 0.8s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .timeline-event:nth-child(1) { animation-delay: 0.2s; }
+        .timeline-event:nth-child(2) { animation-delay: 0.4s; }
+        .timeline-event:nth-child(3) { animation-delay: 0.6s; }
+        .timeline-event:nth-child(4) { animation-delay: 0.8s; }
+        .timeline-event:nth-child(5) { animation-delay: 1s; }
+        .timeline-event:nth-child(6) { animation-delay: 1.2s; }
+        .timeline-event:nth-child(7) { animation-delay: 1.4s; }
+        .timeline-event:nth-child(8) { animation-delay: 1.6s; }
+        .timeline-event:nth-child(9) { animation-delay: 1.8s; }
+
+        .timeline-event.left .content {
+            margin-right: auto;
+            margin-left: 0;
+            text-align: right;
+        }
+
+        .timeline-event.right .content {
+            margin-left: auto;
+            margin-right: 0;
+            text-align: left;
+        }
+
+        .content {
+            width: 45%;
+            padding: 25px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+            border: 2px solid #8B0000;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .content:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 25px rgba(220, 20, 60, 0.4);
+        }
+
+        .date {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #DC143C;
+            color: #fff;
+            font-weight: bold;
+            font-size: 1.1em;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+
+        .content h3 {
+            color: #DC143C;
+            margin-bottom: 12px;
+            font-size: 1.4em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .content p {
+            color: #c0c0c0;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .media-container {
+            margin: 15px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .media-container img {
+            max-width: 100%;
+            border-radius: 4px;
+            border: 2px solid #555;
+            transition: transform 0.3s;
+        }
+
+        .media-container img:hover {
+            transform: scale(1.05);
+            border-color: #DC143C;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            margin: 15px 0;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #555;
+            border-radius: 4px;
+        }
+
+        .qr-code {
+            width: 120px;
+            height: 120px;
+            background: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            border: 2px solid #8B0000;
+            transition: transform 0.3s;
+        }
+
+        .qr-code:hover {
+            transform: scale(1.1);
+        }
+
+        .links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .link-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #8B0000;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: 1px solid #DC143C;
+        }
+
+        .link-btn:hover {
+            background: #DC143C;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(220, 20, 60, 0.5);
+        }
+
+        .dot {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: #DC143C;
+            border: 4px solid #1a1a1a;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(220, 20, 60, 0.8);
+            z-index: 10;
+        }
+
+        @media (max-width: 768px) {
+            .timeline-line {
+                left: 30px;
+            }
+
+            .timeline-event {
+                flex-direction: column;
+                align-items: flex-start;
+                padding-left: 60px;
+            }
+
+            .timeline-event.left .content,
+            .timeline-event.right .content {
+                width: 100%;
+                margin: 0;
+                text-align: left;
+            }
+
+            .dot {
+                left: 30px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+
+        .symbol {
+            font-size: 2em;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>★ LÍNEA DE TIEMPO: GUERRA FRÍA ☭</h1>
+        <p>1945 - 1991 | El conflicto que definió el siglo XX</p>
+    </div>
+
+    <div class="timeline-container">
+        <div class="timeline-line"></div>
+
+        <!-- Evento 1: Conferencia de Potsdam -->
+        <div class="timeline-event left">
+            <div class="dot"></div>
+            <div class="content">
+                <span class="date">1945</span>
+                <h3>🏛️ Conferencia de Potsdam</h3>
+                <p>Última reunión de los líderes aliados (Truman, Stalin, Churchill/Attlee) que marca el fin de la Segunda Guerra Mundial y el inicio de las tensiones Este-Oeste.</p>
+                <div class="media-container">
+                    <img src="img/Bundesarchiv_Bild_183-R86965,_Potsdamer_Konferenz,_Gruppenbild.jpg" alt="Conferencia de Potsdam" style="max-height: 200px;">
+                </div>
+                <div class="video-wrapper">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/6_q5pHRteD4?si=OqK1Z9ZcZWZCPyZJ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>                
+                </div>
+                <div class="links">
+                    <a href="https://es.wikipedia.org/wiki/Conferencia_de_Potsdam" target="_blank" class="link-btn">📖 Leer más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evento 2: Doctrina Truman -->
+        <div class="timeline-event right">
+            <div class="dot"></div>
+            <div class="content">
+                <span class="date">1947</span>
+                <h3>🛡️ Doctrina Truman</h3>
+                <p>Política exterior estadounidense para contener la expansión del comunismo soviético. Marca el inicio oficial de la Guerra Fría con ayuda económica y militar a naciones amenazadas.</p>
+                <div class="media-container">
+                    <img src="img/truman-harry.jpg" alt="Harry Truman" style="max-height: 200px;">
+                </div>
+                <div class="video-wrapper">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/mV3hI1DCCpI?si=FcbfeSt16p_zUjS3" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+                <div class="links">
+                    <a href="https://history.state.gov/milestones/1945-1952/truman-doctrine" target="_blank" class="link-btn">📜 Documentos</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evento 3: Plan Marshall -->
+        <div class="timeline-event left">
+            <div class="dot"></div>
+            <div class="content">
+                <span class="date">1948-1952</span>
+                <h3>💰 Plan Marshall</h3>
+                <p>Programa de reconstrucción económica europea con $13 mil millones de ayuda estadounidense. Buscaba frenar la influencia soviética mediante la recuperación económica.</p>
+                <div class="media-container">
+                    <img src="img/Marshallplanhilfe.gif" alt="Plan Marshall" style="max-height: 200px;">
+                </div>
+                <div class="video-wrapper">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/AsB6X853TVE?si=Pnq6sVktzImvwJ9G" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+                <div class="links">
+                    <a href="https://es.wikipedia.org/wiki/Plan_Marshall" target="_blank" class="link-btn">🌍 Más info</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evento 4: Formación de la OTAN -->
+        <div class="timeline-event right">
+            <div class="dot"></div>
+            <div class="content">
+                <span class="date">1949</span>
+                <h3>🛡️ Formación de la OTAN</h3>
+                <p>Tratado del Atlántico Norte: alianza militar entre EE.UU., Canadá y países de Europa Occidental. Principio de defensa colectiva contra la amenaza soviética.</p>
+                <div class="symbol">★</div>
+                <div class="media-container">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Flag_of_NATO.svg/320px-Flag_of_NATO.svg.png" alt="Bandera OTAN" style="max-height: 150px;">
+                </div>
+                <div class="video-wrapper">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/3LOukHq3sm8?si=gwbfvqMuusUKUlbi" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+                <div class="links">
+                    <a href="https://www.nato.int/cps/en/natohq/declassified_139339.htm" target="_blank" class="link-btn">📄 Historia oficial</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evento 5: Pacto de Varsovia -->
+        <div class="timeline-event left">
+            <div class="dot"></div>
+            <div class="content">
+                <span class="date">1955</span>
+                <h3>☭ Pacto de Varsovia</h3>
+                <p>Respuesta soviética a la OTAN. Alianza militar de los países del bloque comunista de Europa del Este bajo el liderazgo de la URSS.</p>
+                <div class="media-container">
+                    <img src="img/Warsaw_Pact_Logo.svg.png" alt="Pacto de Varsovia" style="max-height: 150px;">
+                </div>
+                <div class="video-wrapper">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/qF22Opn-fuU?si=MajRMSBRCxHQeC4e" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+                <div class="links">
+                    <a href="https://es.wikipedia.org/wiki/Pacto_de_Varsovia" target="_blank" class="link-btn">🔴 Detalles</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evento 6: Conflictos -->
+        <div class="timeline-event right">
+            <div class="dot"></div>
+            <div class="content">
+                <span class="date">1950-1979</span>
+                <h3>⚔️ Conflictos Armados</h3>
+                <p><strong>Corea (1950-53):</strong> Primera guerra caliente. Vietnam (1955-75): Derrota estadounidense. <strong>Cuba (1962):</strong> Crisis de los misiles. <strong>Afganistán (1979-89):</strong> El "Vietnam soviético".</p>
+                <div class="media-container">
+                    <img src="img/descarga.jpeg" alt="Guerra de Vietnam" style="max-height: 200px;">
+                </div>
+                <div class="video-wrapper">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/Wg7K8iHC338?si=lStgCFFGCS7jgGYj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+                <div class="links">
+                    <a href="https://www.history.com/topics/cold-war/cold-war-history" target="_blank" class="link-btn">🎖️ Guerras Proxy</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evento 7: Carrera Espacial -->
+        <div class="timeline-event left">
+            <div class="dot"></div>
+            <div class="content">
+                <span class="date">1957-1969</span>
+                <h3>🚀 Carrera Espacial</h3>
+                <p>Competencia tecnológica y científica. <strong>1957:</strong> Sputnik soviético. <strong>1961:</strong> Gagarin, primer humano en el espacio. <strong>1969:</strong> Apollo 11, el hombre llega a la Luna.</p>
+                <div class="media-container">
+                    <img src="img/apolo11.jpeg" alt="Apollo 11" style="max-height: 200px;">
+                </div>
+                <div class="video-wrapper">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/UHzn-OzoRzU?si=BO6NevetUosyRU3K" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+                <div class="links">
+                    <a href="https://www.nasa.gov/topics/history/index.html" target="_blank" class="link-btn">🌙 NASA Historia</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evento 8: Caída del Muro de Berlín -->
+        <div class="timeline-event right">
+            <div class="dot"></div>
+            <div class="content">
+                <span class="date">9 NOV 1989</span>
+                <h3>🧱 Caída del Muro de Berlín</h3>
+                <p>Símbolo de la división de Alemania y Europa desde 1961. Su caída marca el principio del fin de la Guerra Fría y la reunificación alemana.</p>
+                <div class="media-container">
+                    <img src="img/1_SBM_GedenkstätteBerlinerMauer_Bild_04.jpg" alt="Caída del Muro" style="max-height: 200px;">
+                </div>
+                <div class="video-wrapper">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/z7NiHTh1T20?si=jwe7G3akjUn1Re90" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+                <div class="links">
+                    <a href="https://www.berliner-mauer-gedenkstaette.de/en/" target="_blank" class="link-btn">🏛️ Memorial</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evento 9: Desintegración de la URSS -->
+        <div class="timeline-event left">
+            <div class="dot"></div>
+            <div class="content">
+                <span class="date">26 DIC 1991</span>
+                <h3>☭ Desintegración de la URSS</h3>
+                <p>Disolución oficial de la Unión Soviética. Fin de 69 años de estado comunista y conclusión definitiva de la Guerra Fría. Nacen 15 repúblicas independientes.</p>
+                <div class="media-container">
+                    <img src="img/desurss.jpeg" alt="Bandera URSS destruida" style="max-height: 150px;">
+                </div>
+                <div class="video-wrapper">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/7Xwez2ggAJo?si=00GIGTNSZydprHlW" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+                <div class="links">
+                    <a href="https://es.wikipedia.org/wiki/Disolución_de_la_Unión_Soviética" target="_blank" class="link-btn">📕 Fin de una era</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div style="text-align: center; padding: 40px; color: #888; position: relative; z-index: 2;">
+        <p style="font-size: 1.1em;">★ La Guerra Fría transformó el mundo y definió las relaciones internacionales del siglo XX ☭</p>
+        <div class="media-container">
+            <img src="img/aQ1DmZ.jpg" alt="" style="max-height: 450px;">
+        </div>
+        
+        
+    </div>
+</body>
+</html>
